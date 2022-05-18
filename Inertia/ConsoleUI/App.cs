@@ -9,7 +9,7 @@ public class App
     private const int AnimationMs = 250;
     
     private const int FieldPadding = 2;
-    private const int MessagesPadding = 1;
+    private const int MessagesPadding = 5;
     private const ConsoleColor TextColor = ConsoleColor.Gray;
     private int MaxPlayers { get; }
 
@@ -77,6 +77,9 @@ public class App
             ' '
         };
         
+        Console.SetCursorPosition(Console.LargestWindowWidth, Console.LargestWindowHeight);
+        Console.Write(' ');
+        
         Console.Clear();
         DisplayField();
         DisplayPlayers();
@@ -96,6 +99,7 @@ public class App
                 
                 Console.SetCursorPosition(Console.LargestWindowWidth - (left + FieldPadding + player.Name.Length) / 2 , Console.LargestWindowHeight - top + FieldPadding);
                 Console.Write($"{player.Name}'s turn");
+                Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
 
                 var key = GetKey(activeButtons);
                 if (key == ' ')
@@ -180,7 +184,7 @@ public class App
 
         controlRows = controlRows.Select(r => string.Format("{0," + -(maxLength + 1) + "}", r)).ToArray();
 
-        var messages = new List<string>(new []{"Welcome to Inertia", "Available actions"});
+        var messages = new List<string>(new []{"Welcome to Inertia", "", "Available actions", ""});
 
         if (controlRows.Length % controlColumns != 0)
         {
@@ -229,7 +233,7 @@ public class App
         var fieldTop = Console.WindowTop + FieldPadding;
         var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 1) - FieldPadding * 2;
 
-        var playersLeft = Console.WindowLeft + MessagesPadding;
+        var playersLeft = Console.WindowLeft + FieldPadding;
         var playersTop = fieldTop + fieldHeight + FieldPadding;
 
         for (var i = 0; i < _players.Count; i++)
