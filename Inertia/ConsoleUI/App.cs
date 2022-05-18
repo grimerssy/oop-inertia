@@ -294,8 +294,7 @@ public class App
         var random = new Random();
         
         var fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
-        var fieldHeight = Console.LargestWindowHeight
-         - MaxPlayers - FieldPadding * 3;
+        var fieldHeight = Console.LargestWindowHeight - MaxPlayers - FieldPadding * 3;
         
         while (true)
         {
