@@ -1,3 +1,3 @@
-﻿using Inertia.consoleUI;
+﻿using Inertia.ConsoleUI;
 
 new App().Start();

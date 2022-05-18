@@ -3,7 +3,7 @@ using Inertia.GameField;
 
 namespace Inertia.Players;
 
-public class Player
+public abstract class Player
 {
     private static readonly IReadOnlyDictionary<Direction, (sbyte, sbyte)> Directions =
         new Dictionary<Direction, (sbyte, sbyte)>
@@ -21,12 +21,14 @@ public class Player
     private readonly Field _field;
     public Coordinate Coordinate { get; private set; }
     public PlayerState State { get; private set; }
-    
+
+    public string Name { get; }
     public float Health { get; private set; } = 100f;
     public double Score { get; private set; } = 0;
-    
-    public Player(Field field, Coordinate coordinate)
+
+    protected Player(string name, Field field, Coordinate coordinate)
     {
+        Name = name;
         _field = field;
         Coordinate = coordinate;
     }
@@ -46,7 +48,7 @@ public class Player
         }
 
         var coordinate = new Coordinate(x, y);
-        var cellType = _field.GetCellType(coordinate);
+        var cellType = _field.GetCellContent(coordinate);
 
         switch (cellType)
         {
@@ -70,6 +72,5 @@ public class Player
         Coordinate = coordinate;
             
         State = Health <= 0 ? PlayerState.Dead : PlayerState.Moving;
-    }    
-    
+    }
 }
