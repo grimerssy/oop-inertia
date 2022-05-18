@@ -12,7 +12,7 @@ public class Field
         InitializeCells(Cells);
     }
 
-    public CellType GetCellType(Coordinate coordinate)
+    public CellType GetCellContent(Coordinate coordinate)
     {
         var collectibleTypes = new[] { CellType.Prize, CellType.Trap };
         
