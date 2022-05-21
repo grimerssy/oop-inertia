@@ -6,7 +6,9 @@ namespace Inertia.ConsoleUI;
 
 public class App
 {
-    private const int AnimationMs = 250;
+    private const int MaxAnimationMs = 400;
+    private const int AccelerationPercentage = 15;
+    private const int MinAnimationMs = 100;
     
     private const int FieldPadding = 2;
     private const int MessagesPadding = 5;
@@ -121,7 +123,8 @@ public class App
                 };
 
                 var playerState = PlayerState.Moving;
-
+                var delay = MaxAnimationMs;
+                
                 while (playerState == PlayerState.Moving)
                 {
                     var (prevX, prevY) = (player.Coordinate.X, player.Coordinate.Y);
@@ -139,7 +142,10 @@ public class App
 
                     DisplayPlayers();
                     
-                    Task.Delay(AnimationMs).Wait();
+                    Task.Delay(delay).Wait();
+
+                    var newDelay = delay - delay * AccelerationPercentage / 100;
+                    delay = newDelay < MinAnimationMs ? MinAnimationMs : newDelay;
                 }
                 
                 Console.ForegroundColor = TextColor;
