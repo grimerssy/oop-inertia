@@ -6,10 +6,12 @@ namespace Inertia.ConsoleUI;
 
 public class App
 {
-    private const int AnimationMs = 250;
+    private const int MaxAnimationMs = 400;
+    private const int AccelerationPercentage = 15;
+    private const int MinAnimationMs = 100;
     
     private const int FieldPadding = 2;
-    private const int MessagesPadding = 1;
+    private const int MessagesPadding = 5;
     private const ConsoleColor TextColor = ConsoleColor.Gray;
     private int MaxPlayers { get; }
 
@@ -77,6 +79,9 @@ public class App
             ' '
         };
         
+        Console.SetCursorPosition(Console.LargestWindowWidth, Console.LargestWindowHeight);
+        Console.Write(' ');
+        
         Console.Clear();
         DisplayField();
         DisplayPlayers();
@@ -96,6 +101,7 @@ public class App
                 
                 Console.SetCursorPosition(Console.LargestWindowWidth - (left + FieldPadding + player.Name.Length) / 2 , Console.LargestWindowHeight - top + FieldPadding);
                 Console.Write($"{player.Name}'s turn");
+                Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
 
                 var key = GetKey(activeButtons);
                 if (key == ' ')
@@ -117,7 +123,8 @@ public class App
                 };
 
                 var playerState = PlayerState.Moving;
-
+                var delay = MaxAnimationMs;
+                
                 while (playerState == PlayerState.Moving)
                 {
                     var (prevX, prevY) = (player.Coordinate.X, player.Coordinate.Y);
@@ -135,7 +142,10 @@ public class App
 
                     DisplayPlayers();
                     
-                    Task.Delay(AnimationMs).Wait();
+                    Task.Delay(delay).Wait();
+
+                    var newDelay = delay - delay * AccelerationPercentage / 100;
+                    delay = newDelay < MinAnimationMs ? MinAnimationMs : newDelay;
                 }
                 
                 Console.ForegroundColor = TextColor;
@@ -180,7 +190,7 @@ public class App
 
         controlRows = controlRows.Select(r => string.Format("{0," + -(maxLength + 1) + "}", r)).ToArray();
 
-        var messages = new List<string>(new []{"Welcome to Inertia", "Available actions"});
+        var messages = new List<string>(new []{"Welcome to Inertia", "", "Available actions", ""});
 
         if (controlRows.Length % controlColumns != 0)
         {
@@ -229,7 +239,7 @@ public class App
         var fieldTop = Console.WindowTop + FieldPadding;
         var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 1) - FieldPadding * 2;
 
-        var playersLeft = Console.WindowLeft + MessagesPadding;
+        var playersLeft = Console.WindowLeft + FieldPadding;
         var playersTop = fieldTop + fieldHeight + FieldPadding;
 
         for (var i = 0; i < _players.Count; i++)
@@ -294,8 +304,7 @@ public class App
         var random = new Random();
         
         var fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
-        var fieldHeight = Console.LargestWindowHeight
-         - MaxPlayers - FieldPadding * 3;
+        var fieldHeight = Console.LargestWindowHeight - MaxPlayers - FieldPadding * 3;
         
         while (true)
         {
