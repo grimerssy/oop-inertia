@@ -35,18 +35,19 @@ public abstract class Player
     
     public void Move(Direction direction)
     {
+        if (!CanMove())
+        {
+            State = PlayerState.Stopped;
+            Coordinate = _field.GetEmptyCoordinate();
+            return;
+        }
+        
         var (x, y) = (Coordinate.X, Coordinate.Y);
         var (dX, dY) = Directions[direction];
 
         x += dX;
         y += dY;
-
-        if (x == -1 || y == -1)
-        {
-            State = PlayerState.Stopped;
-            return;
-        }
-
+        
         var coordinate = new Coordinate(x, y);
         var cellType = _field.GetCellContent(coordinate);
 
@@ -72,5 +73,55 @@ public abstract class Player
         Coordinate = coordinate;
             
         State = Health <= 0 ? PlayerState.Dead : PlayerState.Moving;
+    }
+
+    private bool CanMove()
+    {
+        var (x, y) = (Coordinate.X, Coordinate.Y);
+
+        var adjacentCoordinates = new[]
+        {
+            new Coordinate(x - 1, y - 1),
+            new Coordinate(x - 1, y),
+            new Coordinate(x - 1, y + 1),
+            new Coordinate(x, y - 1),
+            new Coordinate(x, y + 1),
+            new Coordinate(x + 1, y - 1),
+            new Coordinate(x + 1, y),
+            new Coordinate(x + 1, y + 1)
+        };
+
+        if (adjacentCoordinates.All(c => _field.GetCellContent(c) == CellType.Wall))
+        {
+            return false;
+        }
+
+        foreach (var direction in Directions)
+        {
+            var stopCells = new[]
+            {
+                CellType.Stop,
+                CellType.Wall
+            };
+            
+            var (dX, dY) = direction.Value;
+            var (newX, newY) = (x + dX, y + dY);
+
+            while (true)
+            {
+                newX += dX;
+                newY += dY;
+
+                var coordinate = new Coordinate(newX, newY);
+                var cellType = _field.GetCellContent(coordinate);
+
+                if (stopCells.Contains(cellType))
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

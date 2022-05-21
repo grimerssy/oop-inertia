@@ -31,7 +31,7 @@ public class App
     public App()
     {
         var fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
-        var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 1) - FieldPadding * 2;
+        var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 2) - FieldPadding * 2;
         _field = new Field(fieldWidth, fieldHeight);
         
         _players = InitializePlayers(_field);
@@ -58,7 +58,7 @@ public class App
                 name = "guest";
             }
             
-            var coordinate = GetEmptyCoordinate();
+            var coordinate = _field.GetEmptyCoordinate();
             players.Add(new ConsolePlayer(name, field, coordinate, color.Value));
         }
 
@@ -210,6 +210,9 @@ public class App
             Console.SetCursorPosition(messageLeft, messageTop);
             Console.Write(message);
         }
+        
+        Console.SetCursorPosition(MessagesPadding, Console.LargestWindowHeight);
+        Console.Write("note: if player cannot move they will be teleported and will be able to move on the next turn");
 
         Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
     }
@@ -236,7 +239,7 @@ public class App
     {
         var fieldLeft = Console.WindowLeft + FieldPadding;
         var fieldTop = Console.WindowTop + FieldPadding;
-        var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 1) - FieldPadding * 2;
+        var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 2) - FieldPadding * 2;
 
         var playersLeft = Console.WindowLeft + FieldPadding;
         var playersTop = fieldTop + fieldHeight + FieldPadding;
@@ -296,22 +299,5 @@ public class App
         Console.ReadLine();
 
         return n;
-    }
-
-    private Coordinate GetEmptyCoordinate()
-    {
-        var random = new Random();
-        
-        var fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
-        var fieldHeight = Console.LargestWindowHeight - MaxPlayers - FieldPadding * 3;
-        
-        while (true)
-        {
-            var coordinate = new Coordinate(random.Next(0, fieldWidth), random.Next(0, fieldHeight));
-            if (_field.GetCellContent(coordinate) == CellType.Empty)
-            {
-                return coordinate;
-            }
-        }
     }
 }
