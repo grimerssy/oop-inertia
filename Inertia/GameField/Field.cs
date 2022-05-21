@@ -10,6 +10,11 @@ public class Field
     {
         Cells = new Cell[width, height];
         InitializeCells(Cells);
+
+        while (!IsPassable(Cells))
+        {
+            InitializeCells(Cells);
+        }
     }
 
     public CellType GetCellContent(Coordinate coordinate)
@@ -72,5 +77,38 @@ public class Field
                 cells[i, j] = new Cell(cellType);
             }
         }
+    }
+
+    private bool IsPassable(Cell[,] cells)
+    {
+        for (var i = 1; i < cells.GetLength(0) - 1; i++)
+        {
+            for (var j = 1; j < cells.GetLength(1) - 1; j++)
+            {
+                if (cells[i, j].Type == CellType.Wall)
+                {
+                    continue;
+                }
+
+                var adjacent = new[]
+                {
+                    cells[i - 1, j - 1],
+                    cells[i - 1, j],
+                    cells[i - 1, j + 1],
+                    cells[i, j - 1],
+                    cells[i, j + 1],
+                    cells[i + 1, j - 1],
+                    cells[i + 1, j],
+                    cells[i + 1, j + 1]
+                };
+
+                if (adjacent.All(c => c.Type == CellType.Wall))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
