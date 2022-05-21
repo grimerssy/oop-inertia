@@ -10,10 +10,11 @@ public class App
     private const int AccelerationPercentage = 15;
     private const int MinAnimationMs = 100;
     
+    private const int MaxPlayers = 6;
+    
     private const int FieldPadding = 2;
     private const int MessagesPadding = 5;
     private const ConsoleColor TextColor = ConsoleColor.Gray;
-    private int MaxPlayers { get; }
 
     private readonly Field _field;
     private readonly List<ConsolePlayer> _players;
@@ -29,8 +30,6 @@ public class App
     
     public App()
     {
-        MaxPlayers = _gameObjects.Count;
-        
         var fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
         var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 1) - FieldPadding * 2;
         _field = new Field(fieldWidth, fieldHeight);
