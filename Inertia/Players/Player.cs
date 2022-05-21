@@ -98,13 +98,29 @@ public abstract class Player
 
         foreach (var direction in Directions)
         {
+            var (dX, dY) = direction.Value;
+
+            if (IsDirectionSafe(dX, dY))
+            {
+                return true;
+            }
+        }
+        
+        return false;
+
+        bool IsDirectionSafe(sbyte dX, sbyte dY)
+        {
+            var avoidCells = new[]
+            {
+                CellType.Trap
+            };
+            
             var stopCells = new[]
             {
                 CellType.Stop,
                 CellType.Wall
             };
-            
-            var (dX, dY) = direction.Value;
+
             var (newX, newY) = (x + dX, y + dY);
 
             while (true)
@@ -115,13 +131,16 @@ public abstract class Player
                 var coordinate = new Coordinate(newX, newY);
                 var cellType = _field.GetCellContent(coordinate);
 
+                if (avoidCells.Contains(cellType))
+                {
+                    return false;
+                }
+                
                 if (stopCells.Contains(cellType))
                 {
                     return true;
                 }
             }
         }
-        
-        return false;
     }
 }
