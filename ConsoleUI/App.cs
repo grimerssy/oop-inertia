@@ -2,7 +2,7 @@ using Inertia.Cells;
 using Inertia.Domain;
 using Inertia.Players;
 
-namespace Inertia.ConsoleUI;
+namespace ConsoleUI;
 
 public class App
 {
@@ -23,7 +23,7 @@ public class App
     private readonly int _fieldLeft;
     private readonly int _fieldTop;
 
-    private readonly Field.Field _field;
+    private readonly Inertia.Field.Field _field;
     private readonly List<ConsolePlayer> _players;
 
     private readonly Dictionary<Type, (char, ConsoleColor)> _gameObjects = new()
@@ -42,13 +42,13 @@ public class App
         _fieldLeft = Console.WindowLeft + FieldPadding;
         _fieldTop = Console.WindowTop + FieldPadding;
         
-        _field = new Field.Field(_fieldWidth, _fieldHeight);
+        _field = new Inertia.Field.Field(_fieldWidth, _fieldHeight);
         _pointsObjective = _field.GetPointsObjective();
         
         _players = InitializePlayers(_field);
     }
     
-    private List<ConsolePlayer> InitializePlayers(Field.Field field)
+    private List<ConsolePlayer> InitializePlayers(Inertia.Field.Field field)
     {
         var playerCount = PromptPlayerCount();
         var getColor = GetColorGenerator();
