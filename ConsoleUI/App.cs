@@ -1,8 +1,8 @@
+using Inertia.Cells;
 using Inertia.Domain;
-using Inertia.GameField;
 using Inertia.Players;
 
-namespace Inertia.ConsoleUI;
+namespace ConsoleUI;
 
 public class App
 {
@@ -16,28 +16,39 @@ public class App
     private const int MessagesPadding = 5;
     private const ConsoleColor TextColor = ConsoleColor.Gray;
 
-    private readonly Field _field;
+    private readonly int _pointsObjective;
+    
+    private readonly int _fieldWidth;
+    private readonly int _fieldHeight;
+    private readonly int _fieldLeft;
+    private readonly int _fieldTop;
+
+    private readonly Inertia.Field.Field _field;
     private readonly List<ConsolePlayer> _players;
 
-    private readonly Dictionary<CellType, (char, ConsoleColor)> _gameObjects = new()
+    private readonly Dictionary<Type, (char, ConsoleColor)> _gameObjects = new()
     {
-        {CellType.Empty, (' ', ConsoleColor.Black)},
-        {CellType.Prize, ('@', ConsoleColor.Green)},
-        {CellType.Stop, ('.', ConsoleColor.Yellow)},
-        {CellType.Wall, ('#', ConsoleColor.Yellow)},
-        {CellType.Trap, ('%', ConsoleColor.Red)}
+        {typeof(EmptyCell), (' ', ConsoleColor.Black)},
+        {typeof(PrizeCell), ('@', ConsoleColor.Green)},
+        {typeof(StopCell), ('.', ConsoleColor.Yellow)},
+        {typeof(WallCell), ('#', ConsoleColor.Yellow)},
+        {typeof(TrapCell), ('%', ConsoleColor.Red)}
     };
     
     public App()
     {
-        var fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
-        var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 2) - FieldPadding * 2;
-        _field = new Field(fieldWidth, fieldHeight);
+        _fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
+        _fieldHeight = Console.LargestWindowHeight - (MaxPlayers + 2) - FieldPadding * 2;
+        _fieldLeft = Console.WindowLeft + FieldPadding;
+        _fieldTop = Console.WindowTop + FieldPadding;
+        
+        _field = new Inertia.Field.Field(_fieldWidth, _fieldHeight);
+        _pointsObjective = _field.GetPointsObjective();
         
         _players = InitializePlayers(_field);
     }
     
-    private List<ConsolePlayer> InitializePlayers(Field field)
+    private List<ConsolePlayer> InitializePlayers(Inertia.Field.Field field)
     {
         var playerCount = PromptPlayerCount();
         var getColor = GetColorGenerator();
@@ -52,13 +63,11 @@ public class App
             }
             
             Console.Write("Enter player name: ");
-            var name = Console.ReadLine() ?? string.Empty;
-            if (name.Equals(string.Empty))
-            {
-                name = "guest";
-            }
+            var input = Console.ReadLine();
             
-            var coordinate = _field.GetEmptyCoordinate();
+            var name = string.Equals(input, string.Empty) ? "guest" : input; 
+            
+            var coordinate = _field.GetRandomEmptyCoordinate();
             players.Add(new ConsolePlayer(name, field, coordinate, color.Value));
         }
 
@@ -67,17 +76,6 @@ public class App
 
     public void Start()
     {
-        var fieldLeft = Console.WindowLeft + FieldPadding;
-        var fieldTop = Console.WindowTop + FieldPadding;
-        
-        var activeButtons = new[]
-        {
-            'Q', 'W', 'E',
-             'A', 'S', 'D',
-              'Z',      'C',
-            ' '
-        };
-        
         Console.SetCursorPosition(Console.LargestWindowWidth, Console.LargestWindowHeight);
         Console.Write(' ');
         
@@ -90,17 +88,15 @@ public class App
         {
             foreach (var player in _players.Where(p => p.State != PlayerState.Dead))
             {
-                Console.ForegroundColor = player.Color;
-
-                var left = Console.WindowLeft + Console.LargestWindowWidth / 2;
-                var top = Console.WindowTop + Console.LargestWindowHeight / 2;
+                var activeButtons = new[]
+                {
+                    'Q', 'W', 'E',
+                    'A', 'S', 'D',
+                    'Z',      'C',
+                    ' '
+                };
                 
-                Console.SetCursorPosition(left, Console.LargestWindowHeight - top + FieldPadding);
-                Console.Write(new string(' ' , Console.LargestWindowWidth - left));
-                
-                Console.SetCursorPosition(Console.LargestWindowWidth - (left + FieldPadding + player.Name.Length) / 2 , Console.LargestWindowHeight - top + FieldPadding);
-                Console.Write($"{player.Name}'s turn");
-                Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
+                DisplayPlayerTurn(player);
 
                 var key = GetKey(activeButtons);
                 if (key == ' ')
@@ -108,54 +104,83 @@ public class App
                     return;
                 }
 
-                Action<ConsolePlayer> playerAction = key switch
+                ApplyActionToPlayer(player, key);
+
+                if (_players.Any(p => p.State != PlayerState.Dead) &&
+                    _players.All(p => p.Score < _pointsObjective))
                 {
-                    'Q' => p => p.Move(Direction.TopLeft),
-                    'W' => p => p.Move(Direction.Top),
-                    'E' => p => p.Move(Direction.TopRight),
-                    'A' => p => p.Move(Direction.Left),
-                    'S' => p => p.Move(Direction.Bottom),
-                    'D' => p => p.Move(Direction.Right),
-                    'Z' => p => p.Move(Direction.BottomLeft),
-                    'C' => p => p.Move(Direction.BottomRight),
-                    _ => throw new ArgumentException()
-                };
-
-                var playerState = PlayerState.Moving;
-                var delay = MaxAnimationMs;
-                
-                while (playerState == PlayerState.Moving)
-                {
-                    var (prevX, prevY) = (player.Coordinate.X, player.Coordinate.Y);
-                    
-                    playerAction(player);
-                    playerState = player.State;
-
-                    var cellType = _field.Cells[prevX, prevY].Type;
-
-                    var (symbol, color) = _gameObjects[cellType];
-
-                    Console.ForegroundColor = color;
-                    Console.SetCursorPosition(fieldLeft + prevX, fieldTop + prevY);
-                    Console.Write(symbol);
-
-                    DisplayPlayers();
-                    
-                    Task.Delay(delay).Wait();
-
-                    var newDelay = delay - delay * AccelerationPercentage / 100;
-                    delay = newDelay < MinAnimationMs ? MinAnimationMs : newDelay;
+                    continue;
                 }
                 
-                Console.ForegroundColor = TextColor;
-                Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
+                var winner = _players.MaxBy(p => p.Score);
 
-                if (_players.All(p => p.State == PlayerState.Dead))
-                {
-                    return;
-                }
+                Console.Clear();
+                Console.ForegroundColor = winner.Color;
+                Console.WriteLine($"{winner.Name} won!");
+                return;
             }
         }
+    }
+
+    private void ApplyActionToPlayer(ConsolePlayer player, char key)
+    {
+        Action<ConsolePlayer> playerAction = key switch
+        {
+            'Q' => p => p.Move(Direction.TopLeft),
+            'W' => p => p.Move(Direction.Top),
+            'E' => p => p.Move(Direction.TopRight),
+            'A' => p => p.Move(Direction.Left),
+            'S' => p => p.Move(Direction.Bottom),
+            'D' => p => p.Move(Direction.Right),
+            'Z' => p => p.Move(Direction.BottomLeft),
+            'C' => p => p.Move(Direction.BottomRight),
+            _ => throw new ArgumentException()
+        };
+
+        var playerState = PlayerState.Moving;
+        var delay = MaxAnimationMs;
+
+        while (playerState == PlayerState.Moving)
+        {
+            var (prevX, prevY) = (player.Coordinate.X, player.Coordinate.Y);
+
+            playerAction(player);
+            playerState = player.State;
+
+            var cellType = _field.Cells[prevX, prevY].GetType();
+
+            var (symbol, color) = _gameObjects[cellType];
+
+            Console.ForegroundColor = color;
+            Console.SetCursorPosition(_fieldLeft + prevX, _fieldTop + prevY);
+            Console.Write(symbol);
+
+            DisplayPlayers();
+
+            Task.Delay(delay).Wait();
+
+            var newDelay = delay - delay * AccelerationPercentage / 100;
+            delay = Math.Min(newDelay, MinAnimationMs);
+        }
+
+        Console.ForegroundColor = TextColor;
+        Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
+    }
+
+    private static void DisplayPlayerTurn(ConsolePlayer player)
+    {
+        Console.ForegroundColor = player.Color;
+
+        var left = Console.WindowLeft + Console.LargestWindowWidth / 2;
+        var top = Console.WindowTop + Console.LargestWindowHeight / 2;
+
+        Console.SetCursorPosition(left, Console.LargestWindowHeight - top + FieldPadding);
+        Console.Write(new string(' ', Console.LargestWindowWidth - left));
+
+        Console.SetCursorPosition(Console.LargestWindowWidth - (left + FieldPadding + player.Name.Length) / 2,
+            Console.LargestWindowHeight - top + FieldPadding);
+        Console.Write($"{player.Name}'s turn");
+        Console.SetCursorPosition(Console.WindowLeft, Console.WindowTop);
     }
 
     private char GetKey(ICollection<char> accept)
@@ -182,7 +207,9 @@ public class App
             "[Q] Move up-left", "[W] Move up", "[E] Move up-right",
             "[A] Move left", "[S] Move down", "[D] Move right",
             "[Z] Move down-left", "", "[C] Move down-right",
-            "[space] Quit", "", ""
+            "[space] Quit", "", "",
+            "", "", "",
+            "", $"Objective: {_pointsObjective} points", ""
         };
 
         var maxLength = controlRows.Max(r => r.Length);
@@ -219,15 +246,12 @@ public class App
 
     private void DisplayField()
     {
-        var fieldLeft = Console.WindowLeft + FieldPadding;
-        var fieldTop = Console.WindowTop + FieldPadding;
-        
         for (var i = 0; i < _field.Cells.GetLength(1); i++)
         {
-            Console.SetCursorPosition(fieldLeft,  fieldTop + i);
+            Console.SetCursorPosition(_fieldLeft,  _fieldTop + i);
             for (var j = 0; j < _field.Cells.GetLength(0); j++)
             {
-                var (symbol, color) = _gameObjects[_field.Cells[j, i].Type];
+                var (symbol, color) = _gameObjects[_field.Cells[j, i].GetType()];
                 Console.ForegroundColor = color;
                 Console.Write(symbol);
             }
@@ -237,12 +261,8 @@ public class App
 
     private void DisplayPlayers()
     {
-        var fieldLeft = Console.WindowLeft + FieldPadding;
-        var fieldTop = Console.WindowTop + FieldPadding;
-        var fieldHeight= Console.LargestWindowHeight - (MaxPlayers + 2) - FieldPadding * 2;
-
         var playersLeft = Console.WindowLeft + FieldPadding;
-        var playersTop = fieldTop + fieldHeight + FieldPadding;
+        var playersTop = _fieldTop + _fieldHeight + FieldPadding;
 
         for (var i = 0; i < _players.Count; i++)
         {
@@ -257,7 +277,7 @@ public class App
             Console.Write("{0,"+ -windowThird +"}", $"Score: {Math.Floor(player.Score)}");
 
             var (x, y) = (player.Coordinate.X, player.Coordinate.Y);
-            Console.SetCursorPosition(fieldLeft + x, fieldTop + y);
+            Console.SetCursorPosition(_fieldLeft + x, _fieldTop + y);
             Console.Write('I');
         }
         
@@ -276,7 +296,16 @@ public class App
 
         ConsoleColor? Generator()
         {
-            return availableColors.Pop();
+            try
+            {
+                return availableColors.Pop();
+            }
+            catch (InvalidOperationException)
+            {
+                Console.Clear();
+                Console.WriteLine("Unexpected error occurred, reach out to stanislav.stoianov@nure.ua to report a problem");
+                throw;
+            }
         }
 
         return Generator;
@@ -286,7 +315,7 @@ public class App
     {
         Console.WriteLine("How many players there is going to be?");
         var input = Console.ReadLine() ?? string.Empty;
-        if (!int.TryParse(input, out var n))
+        if (!int.TryParse(input, out var n) || n < 1)
         {
             n = 1;
         }

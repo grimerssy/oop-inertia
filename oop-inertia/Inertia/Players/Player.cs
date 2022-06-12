@@ -1,5 +1,5 @@
+using Inertia.Cells;
 using Inertia.Domain;
-using Inertia.GameField;
 
 namespace Inertia.Players;
 
@@ -18,15 +18,15 @@ public abstract class Player
             {Direction.TopLeft, (-1, -1)}
         };
     
-    private readonly Field _field;
-    public Coordinate Coordinate { get; private set; }
-    public PlayerState State { get; private set; }
+    private readonly Field.Field _field;
+    public Coordinate Coordinate { get; set; }
+    public PlayerState State { get; set; }
 
     public string Name { get; }
-    public float Health { get; private set; } = 100f;
-    public double Score { get; private set; } = 0;
+    public float Health { get; set; } = 100f;
+    public double Score { get; set; } = 0;
 
-    protected Player(string name, Field field, Coordinate coordinate)
+    protected Player(string name, Field.Field field, Coordinate coordinate)
     {
         Name = name;
         _field = field;
@@ -35,10 +35,12 @@ public abstract class Player
     
     public void Move(Direction direction)
     {
+        State = PlayerState.Moving;
+        
         if (!CanMove())
         {
             State = PlayerState.Stopped;
-            Coordinate = _field.GetEmptyCoordinate();
+            Coordinate = _field.GetRandomEmptyCoordinate();
             return;
         }
         
@@ -49,30 +51,14 @@ public abstract class Player
         y += dY;
         
         var coordinate = new Coordinate(x, y);
-        var cellType = _field.GetCellContent(coordinate);
+        var cell = _field.GetCell(coordinate);
+        _field.RemoveCellIfCollectible(coordinate);
+        cell.Interact(this);
 
-        switch (cellType)
+        if (Health <= 0)
         {
-            case CellType.Wall:
-                State = PlayerState.Stopped;
-                return;
-            
-            case CellType.Stop:
-                Coordinate = coordinate;
-                State = PlayerState.Stopped;
-                return;
-            
-            case CellType.Trap:
-                Health -= 100;
-                break;
-            
-            case CellType.Prize:
-                Score += new Random().NextSingle() * 1000;
-                break;
+            State = PlayerState.Dead;
         }
-        Coordinate = coordinate;
-            
-        State = Health <= 0 ? PlayerState.Dead : PlayerState.Moving;
     }
 
     private bool CanMove()
@@ -91,7 +77,7 @@ public abstract class Player
             new Coordinate(x + 1, y + 1)
         };
 
-        if (adjacentCoordinates.All(c => _field.GetCellContent(c) == CellType.Wall))
+        if (adjacentCoordinates.All(c => _field.GetCell(c).GetType() == typeof(WallCell)))
         {
             return false;
         }
@@ -112,13 +98,13 @@ public abstract class Player
         {
             var avoidCells = new[]
             {
-                CellType.Trap
+                typeof(TrapCell)
             };
             
             var stopCells = new[]
             {
-                CellType.Stop,
-                CellType.Wall
+                typeof(StopCell),
+                typeof(WallCell)
             };
 
             var (newX, newY) = (x + dX, y + dY);
@@ -129,7 +115,7 @@ public abstract class Player
                 newY += dY;
 
                 var coordinate = new Coordinate(newX, newY);
-                var cellType = _field.GetCellContent(coordinate);
+                var cellType = _field.GetCell(coordinate).GetType();
 
                 if (avoidCells.Contains(cellType))
                 {
