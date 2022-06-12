@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inertia", "oop-inertia/Inertia\Inertia.csproj", "{1C67A468-BE86-43F8-97BC-552FE9D01C10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inertia", "oop-inertia\Inertia\Inertia.csproj", "{1C67A468-BE86-43F8-97BC-552FE9D01C10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleUI", "ConsoleUI\ConsoleUI.csproj", "{B2491B35-7AF8-429B-A123-BE1F84F68292}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleUI", "oop-inertia\ConsoleUI\ConsoleUI.csproj", "{B2491B35-7AF8-429B-A123-BE1F84F68292}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
