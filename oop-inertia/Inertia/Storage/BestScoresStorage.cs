@@ -4,7 +4,8 @@ namespace Inertia.Storage;
 
 public class BestScoresStorage
 {
-    private const string FilePath = "../../../../Inertia/Storage/scores.json";
+    private const int MaxEntries = 100;
+    private readonly string FilePath = "../Inertia/Storage/scores.json";
 
     private readonly Dictionary<string, int> _scores;
 
@@ -20,6 +21,13 @@ public class BestScoresStorage
     public void Add(string username, int score)
     {
         _scores[username] = score;
+
+        if (_scores.Count > MaxEntries)
+        {
+            var last = _scores.OrderBy(x => x.Value).First().Key;
+            _scores.Remove(last);
+        }
+        
         var json = JsonConvert.SerializeObject(_scores);
 
         File.WriteAllText(FilePath, json);

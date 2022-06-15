@@ -12,6 +12,8 @@ public class App
     private const int MinAnimationMs = 100;
     
     private const int MaxPlayers = 6;
+    private const string DefaultPlayerName = "guest";
+    private const int TopPlayerCount = 5;
     
     private const int FieldPadding = 2;
     private const int MessagesPadding = 5;
@@ -68,7 +70,7 @@ public class App
             Console.Write("Enter player name: ");
             var input = Console.ReadLine();
             
-            var name = string.Equals(input, string.Empty) ? "guest" : input; 
+            var name = string.Equals(input, string.Empty) ? DefaultPlayerName : input; 
             
             var coordinate = _field.GetRandomEmptyCoordinate();
             players.Add(new ConsolePlayer(name, field, coordinate, color.Value));
@@ -104,6 +106,8 @@ public class App
                 var key = GetKey(activeButtons);
                 if (key == ' ')
                 {
+                    WriteResults();
+                    DisplayResults();
                     return;
                 }
 
@@ -114,15 +118,63 @@ public class App
                 {
                     continue;
                 }
-                
-                var winner = _players.MaxBy(p => p.Score);
 
-                Console.Clear();
-                Console.ForegroundColor = winner.Color;
-                Console.WriteLine($"{winner.Name} won!");
+                WriteResults();
+                DisplayResults();
                 return;
             }
         }
+    }
+
+    private void WriteResults()
+    {
+        foreach (var player in _players.Where(p => p.Name != DefaultPlayerName))
+        {
+            _bestScoresStorage.Add(player.Name, Convert.ToInt32(player.Score));
+        }
+    }
+
+    private void DisplayResults()
+    {
+        Console.Clear();
+
+        var borderX = Console.LargestWindowWidth / 5 * 3;
+        var centerY = Console.LargestWindowHeight / 2;
+        
+        var winner = _players.MaxBy(p => p.Score)!;
+        var winnerMessage = $"{winner.Name} won!";
+        
+        Console.SetCursorPosition(
+            Console.LargestWindowWidth - (Console.LargestWindowWidth - borderX + winnerMessage.Length) / 2, 
+            centerY);
+        Console.ForegroundColor = winner.Color;
+        Console.WriteLine(winnerMessage);
+
+        Console.ForegroundColor = TextColor;
+        
+        var bestScores = _bestScoresStorage.GetTopScores(TopPlayerCount);
+
+        if (bestScores.Count > 0)
+        {
+            var topScores = new List<string>(new[]{"Top players", "\n"});
+
+            foreach (var (key, value) in bestScores)
+            {
+                topScores.Add($"{key}: {value}");
+            }
+
+            var y = centerY - topScores.Count / 2;
+
+            foreach (var scoreMessage in topScores)
+            {
+                Console.SetCursorPosition((Console.LargestWindowWidth - borderX - scoreMessage.Length) / 2, y);
+                Console.Write(scoreMessage);
+                y++;
+            }
+        }
+        
+        Console.SetCursorPosition(Console.LargestWindowWidth, Console.LargestWindowHeight);
+        Console.Write(' ');
     }
 
     private void ApplyActionToPlayer(ConsolePlayer player, char key)
