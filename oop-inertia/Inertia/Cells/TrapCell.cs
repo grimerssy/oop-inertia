@@ -3,10 +3,13 @@ using Inertia.Players;
 
 namespace Inertia.Cells;
 
-public class TrapCell : Cell
+public class TrapCell : CellBase
 {
     public TrapCell(Coordinate coordinate) : base(coordinate)
     {
+        IsCollectible = true;
+        IsDangerous = true;
+        CanStop = false;
     }
 
     public override void Interact(Player player)

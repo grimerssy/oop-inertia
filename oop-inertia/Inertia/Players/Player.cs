@@ -96,17 +96,6 @@ public abstract class Player
 
         bool IsDirectionSafe(sbyte dX, sbyte dY)
         {
-            var avoidCells = new[]
-            {
-                typeof(TrapCell)
-            };
-            
-            var stopCells = new[]
-            {
-                typeof(StopCell),
-                typeof(WallCell)
-            };
-
             var (newX, newY) = (x + dX, y + dY);
 
             while (true)
@@ -115,14 +104,14 @@ public abstract class Player
                 newY += dY;
 
                 var coordinate = new Coordinate(newX, newY);
-                var cellType = _field.GetCell(coordinate).GetType();
+                var cell = _field.GetCell(coordinate);
 
-                if (avoidCells.Contains(cellType))
+                if (cell.IsDangerous)
                 {
                     return false;
                 }
                 
-                if (stopCells.Contains(cellType))
+                if (cell.CanStop)
                 {
                     return true;
                 }

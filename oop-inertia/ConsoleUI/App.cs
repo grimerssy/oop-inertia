@@ -246,10 +246,10 @@ public class App
 
     private void DisplayField()
     {
-        for (var i = 0; i < _field.Cells.GetLength(1); i++)
+        for (var i = 0; i < _field.Cells.LengthY; i++)
         {
             Console.SetCursorPosition(_fieldLeft,  _fieldTop + i);
-            for (var j = 0; j < _field.Cells.GetLength(0); j++)
+            for (var j = 0; j < _field.Cells.LengthX; j++)
             {
                 var (symbol, color) = _gameObjects[_field.Cells[j, i].GetType()];
                 Console.ForegroundColor = color;
