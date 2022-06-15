@@ -1,6 +1,7 @@
 using Inertia.Cells;
 using Inertia.Domain;
 using Inertia.Players;
+using Inertia.Storage;
 
 namespace ConsoleUI;
 
@@ -25,6 +26,7 @@ public class App
 
     private readonly Inertia.Field.Field _field;
     private readonly List<ConsolePlayer> _players;
+    private readonly BestScoresStorage _bestScoresStorage;
 
     private readonly Dictionary<Type, (char, ConsoleColor)> _gameObjects = new()
     {
@@ -35,17 +37,18 @@ public class App
         {typeof(TrapCell), ('%', ConsoleColor.Red)}
     };
     
-    public App()
+    public App(BestScoresStorage bestScoresStorage)
     {
         _fieldWidth = Console.LargestWindowWidth / 2 - FieldPadding * 2;
         _fieldHeight = Console.LargestWindowHeight - (MaxPlayers + 2) - FieldPadding * 2;
         _fieldLeft = Console.WindowLeft + FieldPadding;
         _fieldTop = Console.WindowTop + FieldPadding;
         
+        _bestScoresStorage = bestScoresStorage;
         _field = new Inertia.Field.Field(_fieldWidth, _fieldHeight);
-        _pointsObjective = _field.GetPointsObjective();
-        
         _players = InitializePlayers(_field);
+        
+        _pointsObjective = _field.GetPointsObjective();
     }
     
     private List<ConsolePlayer> InitializePlayers(Inertia.Field.Field field)
