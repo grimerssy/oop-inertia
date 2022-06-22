@@ -35,19 +35,12 @@ public class BestScoresStorage
 
     public Dictionary<string, int> GetTopScores(int entriesCount)
     {
-        var ordered = _scores.OrderByDescending(x => x.Value).ToList();
+        var resultLength = Math.Min(entriesCount, _scores.Count);
 
-        var result = new Dictionary<string, int>();
-
-        var resultLength = Math.Min(entriesCount, ordered.Count);
-
-        for (var i = 0; i < resultLength; i++)
-        {
-            var (key, value) = ordered[i];
-
-            result[key] = value;
-        }
-
-        return result;
+        return _scores.
+            OrderByDescending(x => x.Value).
+            ToList().
+            GetRange(0, resultLength).
+            ToDictionary(x => x.Key, x => x.Value);
     }
 }
