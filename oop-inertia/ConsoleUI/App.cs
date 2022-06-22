@@ -81,6 +81,14 @@ public class App
 
     public void Start()
     {
+        var activeButtons = new[]
+        {
+            'Q', 'W', 'E',
+            'A', 'S', 'D',
+            'Z',      'C',
+            ' '
+        };
+        
         Console.SetCursorPosition(Console.LargestWindowWidth, Console.LargestWindowHeight);
         Console.Write(' ');
         
@@ -88,27 +96,20 @@ public class App
         DisplayField();
         DisplayPlayers();
         DisplayWelcomeMessages();
+
+        var isActive = true;
         
-        while (true)
+        while (isActive)
         {
             foreach (var player in _players.Where(p => p.State != PlayerState.Dead))
             {
-                var activeButtons = new[]
-                {
-                    'Q', 'W', 'E',
-                    'A', 'S', 'D',
-                    'Z',      'C',
-                    ' '
-                };
-                
                 DisplayPlayerTurn(player);
 
                 var key = GetKey(activeButtons);
                 if (key == ' ')
                 {
-                    WriteResults();
-                    DisplayResults();
-                    return;
+                    isActive = false;
+                    break;
                 }
 
                 ApplyActionToPlayer(player, key);
@@ -119,11 +120,12 @@ public class App
                     continue;
                 }
 
-                WriteResults();
-                DisplayResults();
-                return;
+                isActive = false;
             }
         }
+        
+        WriteResults();
+        DisplayResults();
     }
 
     private void WriteResults()
