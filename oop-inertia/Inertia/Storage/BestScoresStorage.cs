@@ -5,13 +5,13 @@ namespace Inertia.Storage;
 public class BestScoresStorage
 {
     private const int MaxEntries = 100;
-    private readonly string FilePath = "../Inertia/Storage/scores.json";
+    private const string FileName = "scores.json";
 
     private readonly Dictionary<string, int> _scores;
 
     public BestScoresStorage()
     {
-        using var stream = new FileStream(FilePath, FileMode.OpenOrCreate);
+        using var stream = new FileStream(FileName, FileMode.OpenOrCreate);
         using var reader = new StreamReader(stream);
         var json = reader.ReadToEnd();
         _scores = JsonConvert.DeserializeObject<Dictionary<string, int>>(json) 
@@ -30,24 +30,17 @@ public class BestScoresStorage
         
         var json = JsonConvert.SerializeObject(_scores);
 
-        File.WriteAllText(FilePath, json);
+        File.WriteAllText(FileName, json);
     }
 
     public Dictionary<string, int> GetTopScores(int entriesCount)
     {
-        var ordered = _scores.OrderByDescending(x => x.Value).ToList();
+        var resultLength = Math.Min(entriesCount, _scores.Count);
 
-        var result = new Dictionary<string, int>();
-
-        var resultLength = Math.Min(entriesCount, ordered.Count);
-
-        for (var i = 0; i < resultLength; i++)
-        {
-            var (key, value) = ordered[i];
-
-            result[key] = value;
-        }
-
-        return result;
+        return _scores.
+            OrderByDescending(x => x.Value).
+            ToList().
+            GetRange(0, resultLength).
+            ToDictionary(x => x.Key, x => x.Value);
     }
 }

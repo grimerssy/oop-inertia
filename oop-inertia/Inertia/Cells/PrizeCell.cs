@@ -16,5 +16,6 @@ public class PrizeCell : CellBase
     {
         player.Score += new Random().NextSingle() * 1000;
         player.Coordinate = Coordinate;
+        player.RemoveCell(Coordinate);
     }
 }

@@ -52,13 +52,18 @@ public abstract class Player
         
         var coordinate = new Coordinate(x, y);
         var cell = _field.GetCell(coordinate);
-        _field.RemoveCellIfCollectible(coordinate);
         cell.Interact(this);
 
         if (Health <= 0)
         {
             State = PlayerState.Dead;
         }
+    }
+
+    public void RemoveCell(Coordinate coordinate)
+    {
+        var emptyCell = new EmptyCell(Coordinate);
+        _field.ReplaceCell(coordinate, emptyCell);
     }
 
     private bool CanMove()

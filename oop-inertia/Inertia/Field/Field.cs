@@ -28,15 +28,10 @@ public class Field
         return Cells[x, y];
     }
 
-    public void RemoveCellIfCollectible(Coordinate coordinate)
+    public void ReplaceCell(Coordinate coordinate, CellBase cell)
     {
         var (x, y) = (coordinate.X, coordinate.Y);
-
-        var cell = GetCell(coordinate);
-        if (cell.IsCollectible)
-        {
-            Cells[x, y] = new EmptyCell(cell.Coordinate);
-        }
+        Cells[x, y] = cell;
     }
 
     public int GetPointsObjective()

@@ -16,5 +16,6 @@ public class TrapCell : CellBase
     {
         player.Health -= 100;
         player.Coordinate = Coordinate;
+        player.RemoveCell(Coordinate);
     }
 }
