@@ -27,7 +27,6 @@
     h1 {
         background: var(--main-white);
         margin: 0;
-        padding-top: 5px
     }
 
     img {

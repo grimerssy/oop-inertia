@@ -8,8 +8,8 @@
 	--main-blue: #D4E2EF;
 	--secondary-blue: #E6EDF3;
 
-	--main-brown: #F1D5BD;
-	--secondary-brown: #DEC88D;
+	--main-brown: #E5A960;
+	--secondary-brown: #C18747;
 
 	--main-white: #FFFFFF;
 	--secondary-white: #F0F0F0;
@@ -31,9 +31,9 @@ body {
 	background: var(--main-brown) linear-gradient(
 			180deg,
 			var(--secondary-blue) 0%,
-			var(--main-blue) 25%,
-			var(--secondary-brown) 60%,
-			var(--main-brown) 90%
+			var(--main-blue) 30%,
+			var(--main-brown) 70%,
+			var(--secondary-brown) 100%
 	);
 }
 
@@ -61,6 +61,13 @@ body::before {
 
 h1,
 h2,
+h3 {
+	margin: auto;
+}
+
+h1,
+h2,
+h3,
 p {
 	font-weight: 400;
 	color: var(--heading-color);
@@ -85,7 +92,7 @@ h1 {
 }
 
 h2 {
-	font-size: 1rem;
+	font-size: 1.5rem;
 }
 
 pre {

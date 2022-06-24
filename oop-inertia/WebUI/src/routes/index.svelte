@@ -3,11 +3,11 @@
 </script>
 
 <div>
-    <div>
-        <img src={preview} alt="preview">
+    <div class="w-50">
+        <img id="preview" src={preview} alt="preview">
     </div>
-    <div>
-        <a sveltekit:prefetch href="/game">Play</a>
+    <div class="w-50">
+        <a id="play" sveltekit:prefetch href="/game/start">Play</a>
     </div>
 </div>
 
@@ -19,16 +19,16 @@
         justify-content: space-evenly;
     }
 
-    div div {
+    .w-50 {
         width: 50%;
     }
 
-    img {
+    #preview {
         max-width: 250px;
         width: 80%;
     }
 
-    a {
+    #play {
         font-size: 2rem;
         padding: 1rem;
         background: var(--main-white);
