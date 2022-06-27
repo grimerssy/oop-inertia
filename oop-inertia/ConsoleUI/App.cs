@@ -8,7 +8,7 @@ namespace ConsoleUI;
 public class App
 {
     private const int MaxAnimationMs = 400;
-    private const int AccelerationPercentage = 15;
+    private const int AccelerationPercentage = 25;
     private const int MinAnimationMs = 100;
     
     private const int MaxPlayers = 6;
@@ -217,7 +217,7 @@ public class App
             Task.Delay(delay).Wait();
 
             var newDelay = delay - delay * AccelerationPercentage / 100;
-            delay = Math.Min(newDelay, MinAnimationMs);
+            delay = Math.Max(newDelay, MinAnimationMs);
         }
 
         Console.ForegroundColor = TextColor;

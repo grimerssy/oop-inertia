@@ -1,9 +1,9 @@
 using Inertia.Cells;
 using Inertia.Domain;
 using Inertia.Field;
+using Inertia.Storage;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models;
-using WebApplication1.Models;
 
 namespace WebAPI.Controllers;
 
@@ -14,7 +14,14 @@ public class InertiaController
     private const string DefaultName = "guest";
     private static Field _field;
     private static WebPlayer[] _players;
-    
+    private readonly BestScoresStorage _bestScoresStorage;
+
+
+    public InertiaController(BestScoresStorage bestScoresStorage)
+    {
+        _bestScoresStorage = bestScoresStorage;
+    }
+
     [HttpPost]
     public ActionResult<StartResponse> Start([FromBody] StartRequest request)
     {
@@ -38,14 +45,17 @@ public class InertiaController
             }
         }
 
-        return new StartResponse(cellTypes, _players);
+        var pointsObjective = _field.GetPointsObjective();
+
+        return new StartResponse(pointsObjective, cellTypes, _players);
     }
 
     [HttpPut]
-    [Route("{playerName}/{direction}")]
-    public ActionResult<UpdateResponse> Update(string playerName, string direction)
+    [Route("{playerColor}/{direction}")]
+    public ActionResult<UpdateResponse> Update(string playerColor, string direction)
     {
-        var player = _players.First(p => p.Name == playerName);
+        playerColor = "#" + playerColor.ToUpper();
+        var player = _players.First(p => p.Color == playerColor);
         var prevCoordinate = player.Coordinate;
         
         switch (direction.ToUpper()) 
@@ -86,11 +96,35 @@ public class InertiaController
         return response;
     }
 
+    [HttpPost]
+    [Route("results/save")]
+    public ActionResult SaveResults()
+    {
+        foreach (var player in _players.Where(p => p.Name != DefaultName))
+        {
+            _bestScoresStorage.Add(player.Name, Convert.ToInt32(player.Score));
+        }
+
+        return new OkResult();
+    }
+    
+    [HttpGet]
+    [Route("leaderboard/{count:int}")]
+    public ActionResult<DictionaryEntry[]> GetTopResults(int count)
+    {
+        var list = new List<DictionaryEntry>();
+        foreach (var (key, value) in _bestScoresStorage.GetTopScores(count))
+        {
+            list.Add(new DictionaryEntry(key, value));
+        }
+
+        return list.ToArray();
+    }
+
     private Func<string> GetHexColorGenerator()
     {
         var colors = new Queue<string> (new [] {
-            "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF",
-            "#800000", "#008000", "#000080", "#808000", "#800080", "#008080",
+            "#FF0000", "#0000FF", "#008000", "#800000", "#808000", "#800080",
             "#C00000", "#00C000", "#0000C0", "#C0C000", "#C000C0", "#00C0C0", 
             "#400000", "#004000", "#000040", "#404000", "#400040", "#004040", 
             "#200000", "#002000", "#000020", "#202000", "#200020", "#002020", 

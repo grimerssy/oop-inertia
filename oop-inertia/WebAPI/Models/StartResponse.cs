@@ -1,14 +1,14 @@
-using WebApplication1.Models;
-
 namespace WebAPI.Models;
 
 public class StartResponse
 {
-    public string[][] CellTypes {get;}
-    public WebPlayer[] Players {get;}
+    public int PointsObjective { get; }
+    public string[][] CellTypes { get; }
+    public WebPlayer[] Players { get; }
     
-    public StartResponse(string[][] cellTypes, WebPlayer[] players)
+    public StartResponse(int pointsObjective, string[][] cellTypes, WebPlayer[] players)
     {
+        PointsObjective = pointsObjective;
         CellTypes = cellTypes;
         Players = players;
     }

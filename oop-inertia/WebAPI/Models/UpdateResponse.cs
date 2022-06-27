@@ -1,5 +1,3 @@
-using WebApplication1.Models;
-
 namespace WebAPI.Models;
 
 public class UpdateResponse

@@ -2,14 +2,14 @@ using Inertia.Domain;
 using Inertia.Field;
 using Inertia.Players;
 
-namespace WebApplication1.Models;
+namespace WebAPI.Models;
 
 public class WebPlayer : Player
 {
-    public readonly string ColorHex;
+    public string Color { get; }
 
-    public WebPlayer(string name, Field field, Coordinate coordinate, string colorHex) : base(name, field, coordinate)
+    public WebPlayer(string name, Field field, Coordinate coordinate, string color) : base(name, field, coordinate)
     {
-        ColorHex = colorHex;
+        Color = color;
     }
 }
