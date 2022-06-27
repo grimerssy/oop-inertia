@@ -6,6 +6,7 @@ namespace Inertia.Field;
 public class Field
 {
     public readonly Cells.Cells Cells;
+    private readonly List<Coordinate> _occupied = new();
 
     public Field(int width, int height)
     {
@@ -44,7 +45,7 @@ public class Field
             {
                 if (Cells[i, j].GetType() == typeof(PrizeCell))
                 {
-                    objective += 50;
+                    objective += 100;
                 }
             }
         }
@@ -55,17 +56,26 @@ public class Field
     public Coordinate GetRandomEmptyCoordinate()
     {
         var random = new Random();
-        
+
         var fieldWidth = Cells.LengthX;
         var fieldHeight = Cells.LengthY;
         
         while (true)
         {
             var coordinate = new Coordinate(random.Next(0, fieldWidth), random.Next(0, fieldHeight));
-            if (GetCell(coordinate).GetType() == typeof(EmptyCell))
+
+            if (_occupied.Contains(coordinate))
             {
-                return coordinate;
+                continue;
             }
+            
+            if (GetCell(coordinate).GetType() != typeof(EmptyCell))
+            {
+                continue;
+            }
+            
+            _occupied.Add(coordinate);
+            return coordinate;
         }
     }
 }

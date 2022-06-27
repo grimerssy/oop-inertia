@@ -14,7 +14,7 @@ public class PrizeCell : CellBase
 
     public override void Interact(Player player)
     {
-        player.Score += new Random().NextSingle() * 1000;
+        player.Score += new Random().NextSingle() * 250;
         player.Coordinate = Coordinate;
         player.RemoveCell(Coordinate);
     }

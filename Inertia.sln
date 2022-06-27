@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inertia", "oop-inertia\Iner
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleUI", "oop-inertia\ConsoleUI\ConsoleUI.csproj", "{B2491B35-7AF8-429B-A123-BE1F84F68292}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "oop-inertia\WebAPI\WebAPI.csproj", "{5DC06EF8-7E3C-4E90-80B7-6E87E27E806F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{B2491B35-7AF8-429B-A123-BE1F84F68292}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2491B35-7AF8-429B-A123-BE1F84F68292}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2491B35-7AF8-429B-A123-BE1F84F68292}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DC06EF8-7E3C-4E90-80B7-6E87E27E806F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DC06EF8-7E3C-4E90-80B7-6E87E27E806F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DC06EF8-7E3C-4E90-80B7-6E87E27E806F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DC06EF8-7E3C-4E90-80B7-6E87E27E806F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
