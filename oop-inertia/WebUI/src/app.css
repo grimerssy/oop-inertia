@@ -28,7 +28,7 @@
 body {
 	min-height: 100vh;
 	margin: 0;
-	background: var(--main-brown) linear-gradient(
+	background: linear-gradient(
 			180deg,
 			var(--secondary-blue) 0%,
 			var(--main-blue) 30%,

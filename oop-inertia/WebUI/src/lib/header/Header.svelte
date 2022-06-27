@@ -22,6 +22,8 @@
     header {
         display: flex;
         justify-content: center;
+        position: sticky;
+        top: 0;
     }
 
     h1 {
