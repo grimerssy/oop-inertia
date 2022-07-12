@@ -346,7 +346,6 @@
                 <div class="col player-box">
                     <p style="color: {player.color}">
                         {player.name}<br>
-                        Health: {player.health}<br>
                         Score: {Math.floor(player.score)}
                     </p>
                 </div>
