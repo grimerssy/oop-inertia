@@ -14,10 +14,10 @@
 </script>
 
 <div class="col w-50">
-    {#each leaderboard as keyValPair}
+    {#each leaderboard as entry}
         <div class="row">
-            <h2>{keyValPair.key}:</h2>
-            <h2>{keyValPair.value}</h2>
+            <h2>{entry.name}:</h2>
+            <h2>{entry.score}</h2>
         </div>
     {/each}
 </div>

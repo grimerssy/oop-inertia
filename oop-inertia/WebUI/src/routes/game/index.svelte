@@ -13,6 +13,10 @@
     import idlePlayer from "./../../static/armadillo-standing.png"
     import deadPlayer from './../../static/armadillo-sitting.png'
 
+    const idleState = 0
+    const activeState = 1
+    const deadState = 2
+
     let cells = [[]]
     let players = []
     let pointsObjective
@@ -55,13 +59,13 @@
             const img = cell.firstElementChild.firstElementChild
 
             switch (p.state) {
-                case 0:
+                case idleState:
                     img.src = idlePlayer
                     break
-                case 1:
+                case activeState:
                     img.src = activePlayer
                     break
-                case 2:
+                case deadState:
                     img.src = deadPlayer
                     break
             }
@@ -89,62 +93,94 @@
 
     let listening = true
 
+    function getDirectionFromChar(char) {
+        switch (char) {
+            case 'Q':
+                return "tl"
+            case 'W':
+                return "t"
+            case 'E':
+                return "tr"
+            case 'A':
+                return "l"
+            case 'S':
+                return "b"
+            case 'D':
+                return "r"
+            case 'Z':
+                return "bl"
+            case 'C':
+                return "br"
+        }
+    }
+
+    function getImage(imageName) {
+        switch (imageName) {
+            case 'empty':
+                return empty
+            case 'trap':
+                return cactus
+            case 'prize':
+                return ant
+            case 'wall':
+                return rock
+            case 'stop':
+                return sandpit
+        }
+    }
+
+    function getChar(event) {
+        let charCode = (typeof event !== 'undefined') ? event.keyCode : event.which
+
+        return String.fromCharCode(charCode).toUpperCase();
+    }
+
+    function loadToBestPlayer(_bestPlayer) {
+        bestPlayer.name = _bestPlayer.name
+        bestPlayer.score = _bestPlayer.score
+        bestPlayer.coordinate = _bestPlayer.coordinate
+        bestPlayer.color = _bestPlayer.color
+    }
+
+    function displayEndScreen() {
+        document.getElementById('root').innerHTML = `<div style=" display: flex;flex-direction: column;justify-content: center;">
+                                                                <h2 style="margin: 5rem auto;">Game over!</h2>
+                                                                <a style="background: var(--main-white);padding:0.7rem;border-radius: 0.7rem; margin: 1rem auto;" sveltekit:prefetch href="/game/results">see results</a>
+                                                             </div>`
+    }
+
+    function updatePlayerDiv(div, player) {
+        div.style.color = player.color+ "C0"
+        div.innerText = player.name
+    }
+
     async function listen() {
         const activeButtons = ['Q', 'W', 'E', 'A', 'S', 'D', 'Z', 'C']
 
         let currentPlayer = players[index]
 
         const currentPlayerDiv = document.getElementById('current-player')
-        currentPlayerDiv.style.color = currentPlayer.color+ "C0"
-        currentPlayerDiv.innerText = currentPlayer.name
+        updatePlayerDiv(currentPlayerDiv, currentPlayer)
 
         document.onkeydown = async event => {
             if (!listening) {
                 return
             }
 
-            let charCode = (typeof event !== 'undefined') ? event.keyCode : event.which
-
-            let char = String.fromCharCode(charCode).toUpperCase();
-            listening = false
+            let char = getChar(event)
 
             if (activeButtons.indexOf(char) === -1) {
                 return
             }
+
+            listening = false
 
             let id = currentPlayer.coordinate.x + ":" + currentPlayer.coordinate.y
             let cell = document.getElementById(id)
             let img = cell.firstElementChild.firstElementChild
             img.src = activePlayer
 
-            let direction
-
-            switch (char) {
-                case 'Q':
-                    direction = "tl"
-                    break
-                case 'W':
-                    direction = "t"
-                    break
-                case 'E':
-                    direction = "tr"
-                    break
-                case 'A':
-                    direction = "l"
-                    break
-                case 'S':
-                    direction = "b"
-                    break
-                case 'D':
-                    direction = "r"
-                    break
-                case 'Z':
-                    direction = "bl"
-                    break
-                case 'C':
-                    direction = "br"
-                    break
-            }
+            let direction = getDirectionFromChar(char)
 
             const color = currentPlayer.color.substring(1)
             let moving = true
@@ -166,23 +202,7 @@
 
                 cell.style.background = 'none'
 
-                switch (result.prevCellType) {
-                    case 'empty':
-                        img.src = empty
-                        break;
-                    case 'trap':
-                        img.src = cactus
-                        break;
-                    case 'prize':
-                        img.src = ant
-                        break;
-                    case 'wall':
-                        img.src = rock
-                        break;
-                    case 'stop':
-                        img.src = sandpit
-                        break;
-                }
+                img.src = getImage(result.prevCellType)
 
                 id = result.player.coordinate.x + ":" + result.player.coordinate.y
                 cell = document.getElementById(id)
@@ -193,7 +213,7 @@
                 await displayPlayers()
 
 
-                if (currentPlayer.state === 1) {
+                if (currentPlayer.state === activeState) {
                     await new Promise(r => setTimeout(r, animationMs));
                     continue
                 }
@@ -206,7 +226,7 @@
                 animationMs = Math.max(newDelay, minAnimationMs)
             }
 
-            if (players.filter(p => p.state !== 2).length === 0 ||
+            if (players.filter(p => p.state !== deadState).length === 0 ||
                 players.filter(p => p.score >= pointsObjective).length !== 0) {
 
                 await fetch(`http://localhost:8000/api/inertia/results/save`, {
@@ -216,24 +236,17 @@
                 await new Promise(r => setTimeout(r, 1700))
 
                 const bestScore = players.reduce((prev, next) => Math.max(prev, next.score), 0)
-                const bestPl = players.find(p => p.score === bestScore)
+                const _bestPlayer = players.find(p => p.score === bestScore)
 
-                bestPlayer.name = bestPl.name
-                bestPlayer.score = bestPl.score
-                bestPlayer.coordinate = bestPl.coordinate
-                bestPlayer.color = bestPl.color
+                loadToBestPlayer(_bestPlayer)
 
-                document.getElementById('root').innerHTML = `<div style=" display: flex;flex-direction: column;justify-content: center;">
-                                                                <h2 style="margin: 5rem auto;">Game over!</h2>
-                                                                <a style="background: var(--main-white);padding:0.7rem;border-radius: 0.7rem; margin: 1rem auto;" sveltekit:prefetch href="/game/results">see results</a>
-                                                             </div>`
+                displayEndScreen()
                 return
             }
 
             currentPlayer = getNextPlayer()
 
-            currentPlayerDiv.style.color = currentPlayer.color + "C0"
-            currentPlayerDiv.innerText = currentPlayer.name
+            updatePlayerDiv(currentPlayerDiv, currentPlayer)
             listening = true
         }
     }

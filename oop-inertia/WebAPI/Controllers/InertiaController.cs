@@ -3,6 +3,7 @@ using Inertia.Domain;
 using Inertia.Field;
 using Inertia.Storage;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using WebAPI.Models;
 
 namespace WebAPI.Controllers;
@@ -15,7 +16,6 @@ public class InertiaController
     private static Field _field;
     private static WebPlayer[] _players;
     private readonly BestScoresStorage _bestScoresStorage;
-
 
     public InertiaController(BestScoresStorage bestScoresStorage)
     {
@@ -51,42 +51,27 @@ public class InertiaController
     }
 
     [HttpPut]
-    [Route("{playerColor}/{direction}")]
-    public ActionResult<UpdateResponse> Update(string playerColor, string direction)
+    [Route("{playerColor}/{directionCode}")]
+    public ActionResult<UpdateResponse> Update(string playerColor, string directionCode)
     {
+        var directions = new Dictionary<string, Direction>()
+        {
+            {"TL", Direction.TopLeft},
+            {"T", Direction.Top},
+            {"TR", Direction.TopRight},
+            {"L", Direction.Left},
+            {"R", Direction.Right},
+            {"BL", Direction.BottomLeft},
+            {"B", Direction.Bottom},
+            {"BR", Direction.BottomRight},
+        };
+        
         playerColor = "#" + playerColor.ToUpper();
         var player = _players.First(p => p.Color == playerColor);
         var prevCoordinate = player.Coordinate;
-        
-        switch (direction.ToUpper()) 
-        {
-            case "TL":
-                player.Move(Direction.TopLeft); 
-                break;
-            case "T":
-                player.Move(Direction.Top); 
-                break; 
-            case "TR": 
-                player.Move(Direction.TopRight); 
-                break; 
-            case "L": 
-                player.Move(Direction.Left); 
-                break; 
-            case "R": 
-                player.Move(Direction.Right); 
-                break; 
-            case "BL": 
-                player.Move(Direction.BottomLeft); 
-                break; 
-            case "B":
-                player.Move(Direction.Bottom); 
-                break;
-            case "BR": 
-                player.Move(Direction.BottomRight);
-                break;
-            default:
-                return new BadRequestResult();
-        }
+
+        var direction = directions[directionCode.ToUpper()];
+        player.Move(direction);
         
         var response = new UpdateResponse(
             prevCoordinate.X + ":" + prevCoordinate.Y, 
@@ -110,12 +95,12 @@ public class InertiaController
     
     [HttpGet]
     [Route("leaderboard/{count:int}")]
-    public ActionResult<DictionaryEntry[]> GetTopResults(int count)
+    public ActionResult<LeaderboardEntry[]> GetTopResults(int count)
     {
-        var list = new List<DictionaryEntry>();
-        foreach (var (key, value) in _bestScoresStorage.GetTopScores(count))
+        var list = new List<LeaderboardEntry>();
+        foreach (var (name, score) in _bestScoresStorage.GetTopScores(count))
         {
-            list.Add(new DictionaryEntry(key, value));
+            list.Add(new LeaderboardEntry(name, score));
         }
 
         return list.ToArray();
