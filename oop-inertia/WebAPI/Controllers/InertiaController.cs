@@ -3,7 +3,6 @@ using Inertia.Domain;
 using Inertia.Field;
 using Inertia.Storage;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using WebAPI.Models;
 
 namespace WebAPI.Controllers;
@@ -30,7 +29,8 @@ public class InertiaController
         var colorGenerator = GetHexColorGenerator();
         _players = request.PlayerNames.
             Select(x => string.IsNullOrEmpty(x) ? DefaultName : x).
-            Select(x => new WebPlayer(x, _field, _field.GetRandomEmptyCoordinate(), colorGenerator())).
+            Select(x => new WebPlayer(x, _field, 
+                _field.GetRandomEmptyCoordinate(), colorGenerator())).
             ToArray();
 
         var cellTypes = new string[_field.Cells.LengthX][];
@@ -52,7 +52,8 @@ public class InertiaController
 
     [HttpPut]
     [Route("{playerColor}/{directionCode}")]
-    public ActionResult<UpdateResponse> Update(string playerColor, string directionCode)
+    public ActionResult<UpdateResponse> Update(string playerColor, 
+        string directionCode)
     {
         var directions = new Dictionary<string, Direction>()
         {

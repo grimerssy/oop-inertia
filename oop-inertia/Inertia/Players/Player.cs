@@ -5,6 +5,8 @@ namespace Inertia.Players;
 
 public abstract class Player
 {
+    private const int DeadEndDepth = 5;
+    
     private static readonly IReadOnlyDictionary<Direction, (sbyte, sbyte)> Directions =
         new Dictionary<Direction, (sbyte, sbyte)>
         {
@@ -68,58 +70,90 @@ public abstract class Player
 
     private bool CanMove()
     {
-        var (x, y) = (Coordinate.X, Coordinate.Y);
-
-        var adjacentCoordinates = new[]
-        {
-            new Coordinate(x - 1, y - 1),
-            new Coordinate(x - 1, y),
-            new Coordinate(x - 1, y + 1),
-            new Coordinate(x, y - 1),
-            new Coordinate(x, y + 1),
-            new Coordinate(x + 1, y - 1),
-            new Coordinate(x + 1, y),
-            new Coordinate(x + 1, y + 1)
-        };
-
-        if (adjacentCoordinates.All(c => _field.GetCell(c).GetType() == typeof(WallCell)))
+        if (FilterSafeDirections(Coordinate).Count == 0)
         {
             return false;
         }
 
-        foreach (var direction in Directions)
-        {
-            var (dX, dY) = direction.Value;
+        return !IsDeadEnd(Coordinate);
+    }
 
-            if (IsDirectionSafe(dX, dY))
+    private bool IsDeadEnd(Coordinate coordinate)
+    {
+        var seenCoordinates = new List<Coordinate>(new[]{coordinate});
+
+        bool InnerRecursion(Coordinate coord, int iteration = 1)
+        {
+            if (iteration > DeadEndDepth)
+            {
+                return false;
+            }
+            
+            var safeDirections = FilterSafeDirections(coord);
+
+            var finalCoordinates = safeDirections.
+                Select(d => GetFinalCoordinate(coord, d.Item1, d.Item2)).
+                Where(c => !seenCoordinates.Contains(c)).
+                ToList();
+
+            if (finalCoordinates.Count == 0)
             {
                 return true;
             }
+
+            seenCoordinates.AddRange(finalCoordinates);
+
+            return finalCoordinates.All(c => InnerRecursion(c, iteration + 1));
         }
-        
-        return false;
 
-        bool IsDirectionSafe(sbyte dX, sbyte dY)
+        return InnerRecursion(coordinate);
+    }
+
+    private Coordinate GetFinalCoordinate(Coordinate coordinate, 
+        sbyte dX, sbyte dY)
+    {
+        var (x, y) = (coordinate.X, coordinate.Y);
+
+        while (true)
         {
-            var (newX, newY) = (x + dX, y + dY);
+            x += dX;
+            y += dY;
 
-            while (true)
+            var cell = _field.GetCell(new Coordinate(x, y));
+
+            if (cell.CanStop)
             {
-                newX += dX;
-                newY += dY;
+                return new Coordinate(x, y);
+            }
+        }
+    }
+    
+    private List<(sbyte, sbyte)> FilterSafeDirections(Coordinate coordinate)
+    {
+        return Directions.Values.Where(xy => 
+                IsDirectionSafe(coordinate, xy.Item1, xy.Item2)).
+            ToList();
+    }
+    
+    private bool IsDirectionSafe(Coordinate coordinate, sbyte dX, sbyte dY)
+    {
+        var (x, y) = (coordinate.X, coordinate.Y);
 
-                var coordinate = new Coordinate(newX, newY);
-                var cell = _field.GetCell(coordinate);
+        while (true)
+        {
+            x += dX;
+            y += dY;
 
-                if (cell.IsDangerous)
-                {
-                    return false;
-                }
+            var cell = _field.GetCell(new Coordinate(x, y));
+
+            if (cell.IsDangerous)
+            {
+                return false;
+            }
                 
-                if (cell.CanStop)
-                {
-                    return true;
-                }
+            if (cell.CanStop)
+            {
+                return true;
             }
         }
     }
