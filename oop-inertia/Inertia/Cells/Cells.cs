@@ -52,11 +52,13 @@ public class Cells
 
                 foreach (var (filter, cellType) in filterTypes)
                 {
-                    if (filter(randValue))
+                    if (!filter(randValue))
                     {
-                        _cells[i, j] = (CellBase)Activator.CreateInstance(cellType, new Coordinate(i, j))!;
-                        break;
+                        continue;
                     }
+                    
+                    _cells[i, j] = (CellBase)Activator.CreateInstance(cellType, new Coordinate(i, j))!;
+                    break;
                 }
             }
         }
