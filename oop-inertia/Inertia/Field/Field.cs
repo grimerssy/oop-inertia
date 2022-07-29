@@ -6,7 +6,7 @@ namespace Inertia.Field;
 public class Field
 {
     public readonly Cells.Cells Cells;
-    private readonly List<Coordinate> _occupied = new();
+    private readonly List<Coordinate> _usedCoordinates = new();
 
     public Field(int width, int height)
     {
@@ -62,9 +62,12 @@ public class Field
         
         while (true)
         {
-            var coordinate = new Coordinate(random.Next(0, fieldWidth), random.Next(0, fieldHeight));
+            var coordinate = new Coordinate(
+                random.Next(0, fieldWidth), 
+                random.Next(0, fieldHeight)
+                );
 
-            if (_occupied.Contains(coordinate))
+            if (_usedCoordinates.Contains(coordinate))
             {
                 continue;
             }
@@ -74,7 +77,7 @@ public class Field
                 continue;
             }
             
-            _occupied.Add(coordinate);
+            _usedCoordinates.Add(coordinate);
             return coordinate;
         }
     }
